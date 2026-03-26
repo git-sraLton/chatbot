@@ -1,0 +1,28 @@
+{
+  "studentmail": "lars.jundt@students.fhnw.ch",
+  "repo": {
+    "url": "https://gitlab.fhnw.ch/spd/module/devops/hs25/hs25-group28/service-jundt",
+    "tags": "https://gitlab.fhnw.ch/spd/module/devops/hs25/hs25-group28/service-jundt/-/tags"
+  },
+  "registryurl": "cr.gitlab.fhnw.ch/spd/module/devops/hs25/hs25-group28/service-jundt",
+  "pipeline": {
+    "url": "https://gitlab.fhnw.ch/spd/module/devops/hs25/hs25-group28/service-jundt/-/blob/main/.gitlab-ci.yml",
+    "examples": {
+      "releasePipelineExample": "https://gitlab.fhnw.ch/spd/module/devops/hs25/hs25-group28/service-jundt/-/pipelines/379990",
+      "continuousPipelineExample": "https://gitlab.fhnw.ch/spd/module/devops/hs25/hs25-group28/service-jundt/-/pipelines/379989"
+    },
+    "components": [
+
+    ],
+    "additionalFunctionalities": [
+      {
+        "description": "",
+        "externalurl": ""
+      }
+    ]
+  },
+  "probes": {
+    "livenesssourcecode": "",
+    "readinesssourcecode": ""
+  }
+}

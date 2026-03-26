@@ -1,0 +1,29 @@
+{
+  "name": "chatbot",
+  "version": "2.1.9",
+  "description": "",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development node --loader ts-node/esm src/index.ts",
+    "build": "tsc",
+    "version": "conventional-changelog"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.78",
+    "@langchain/groq": "^0.2.4",
+    "@langchain/langgraph": "^0.4.9",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.2",
+    "@types/uuid": "^10.0.0",
+    "conventional-changelog": "^7.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "private": true
+}
