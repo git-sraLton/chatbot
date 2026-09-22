@@ -16,7 +16,8 @@ RUN npm r -g npm
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
-COPY .env.example ./.env
+#COPY .env.example ./.env
+COPY .env ./.env
 
 EXPOSE 3000
 CMD ["node", "dist/index.js"]

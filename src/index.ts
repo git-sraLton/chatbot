@@ -1,59 +1,44 @@
 import express, {Request, Response} from "express";
-import {ChatGroq} from "@langchain/groq";
-import {END, MemorySaver, MessagesAnnotation, START, StateGraph} from "@langchain/langgraph";
-import { v4 as uuidv4 } from "uuid";
-import {AIMessage} from "@langchain/core/messages";
-import {ChatPromptTemplate} from "@langchain/core/prompts";
+import {GoogleGenAI} from "@google/genai";
 await import('dotenv/config');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
 
-// Initialize the LLM
-const llm = new ChatGroq({
-    model: "llama-3.1-8b-instant",
-    temperature: 0
+// Initialize the Google Gen AI client
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY
 });
 
 // Define some basic instructions for the chatbot how he should behave.
-const promptTemplate = ChatPromptTemplate.fromMessages([
-    [
-        "system",
-        "You are a cook who is obsessed with japanese cuisine. Always try to steer the conversation towards cooking, food, or japanese culture. Keep your responses concise and engaging.",
-    ],
-    ["placeholder", "{messages}"],
-]);
+const systemInstruction =
+    "You are a cook who is obsessed with japanese cuisine. Always try to steer the conversation towards cooking, food, or japanese culture. Keep your responses concise and engaging.";
 
-// Call the LLM
-const callModel = async (state: typeof MessagesAnnotation.State) => {
-    const prompt = await promptTemplate.invoke(state);
-    const response = await llm.invoke(prompt);
-    return { messages: [response] };
-};
+// Function to create a chatbot session with memory which remembers past messages.
+const createChat = () =>
+    ai.chats.create({
+        model: MODEL,
+        config: {
+            systemInstruction,
+            temperature: 1,
+        },
+    });
 
-// Define a new graph
-const workflow = new StateGraph(MessagesAnnotation)
-    .addNode("model", callModel)
-    .addEdge(START, "model")
-    .addEdge("model", END);
-
-// Define a chatbot with memory which remembers past messages.
-const memory = new MemorySaver();
-const chatbot = workflow.compile({ checkpointer: memory });
-let config = { configurable: { thread_id: uuidv4() } };
+let chat = createChat();
 
 // Define endpoint which accepts user messages and returns AI responses.
 app.get("/chat", async (req: Request, res: Response) => {
     if (req.query.msg && typeof req.query.msg === 'string') {
-        const input = [
-            {
-                role: "user",
-                content: req.query.msg,
-            },
-        ];
-        const output = await chatbot.invoke({ messages: input }, config as any);
-        const answer = output.messages[output.messages.length - 1] as AIMessage;
-        res.send(answer.lc_kwargs.content);
+        try {
+            const response = await chat.sendMessage({
+                message: req.query.msg,
+            });
+            res.send(response.text);
+        } catch (error) {
+            console.error("Error generating chat response:", error);
+            res.status(500).send({ error: "Failed to generate response" });
+        }
     } else {
         // Bad request
         res.status(400).send({ error: "Missing 'msg' query parameter" });
@@ -62,7 +47,7 @@ app.get("/chat", async (req: Request, res: Response) => {
 
 // Endpoint to reset chat history and start a new chat.
 app.get("/reset", async (_req: Request, res: Response) => {
-    config = { configurable: { thread_id: uuidv4() } };
+    chat = createChat();
     res.send("Chat history reset.");
 });
 
@@ -74,7 +59,10 @@ app.get("/live", (_req: Request, res: Response) => {
 // Readiness endpoint
 app.get("/ready", async (_req: Request, res: Response) => {
     try {
-        await llm.invoke("hello");
+        await ai.models.generateContent({
+            model: MODEL,
+            contents: "hello",
+        });
         res.status(200).send("OK");
     } catch (error) {
         console.error("Readiness check failed:", error);
